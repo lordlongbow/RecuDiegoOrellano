@@ -1,7 +1,10 @@
 package com.example.recudiegoorellano;
 
+import android.app.AlertDialog;
 import android.app.Application;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -19,7 +22,8 @@ public class MainActivityViewModel extends AndroidViewModel {
     private Context contexto;
     private MutableLiveData<Persona> personaData = new MutableLiveData<>();
     private MutableLiveData<Boolean> validado = new MutableLiveData<>(false);
-    private MutableLiveData<TextView> mensaje = new MutableLiveData<>();
+    private AlertDialogListener alertDialogListener;
+
 
     public MainActivityViewModel(@NonNull Application application) {
         super(application);
@@ -28,28 +32,38 @@ public class MainActivityViewModel extends AndroidViewModel {
 
     public void valores(String nombre, String peso, String altura, String edad) {
 
+
+        Log.d("salida","dentro de valores peso es:   " + peso);
+
         double parsepeso = Double.parseDouble(peso);
         double parsealtura = Double.parseDouble(altura);
         int parseedad = Integer.parseInt(edad);
         Persona persona = new Persona(nombre, parsepeso, parsealtura,parseedad );
         personaData.setValue(persona);
-
+        Log.d("salida","dentro de personaData peso es:   " + personaData);
     }
 
-    public void validarDatos(String nombre, String peso, String altura, String edad, TextView mensaje) {
+    public void validarDatos(String nombre, String peso, String altura, String edad) {
 
-        boolean datosValidos = true;
+        if (nombre.isEmpty() || peso.isEmpty() || altura.isEmpty() || edad.isEmpty()) {
 
-
-        if (nombre.isEmpty() || peso.isEmpty() || altura.isEmpty()  || edad.isEmpty() ) {
-
-            mensaje.setText("Debes Comletar todos los campos");
-
-        } else {
-            mensaje.setText("");
-            datosValidos = true;
+            validado.setValue(false);
+        }else{
+            validado.setValue(true);
         }
-        validado.setValue(datosValidos);
+
+        if(validado.getValue() == false){
+            alertDialogListener.mostrarAlerta("Debes llenar todos los datos");
+        }else{
+            valores(nombre, peso,  altura, edad);
+            Log.d("salida","dentro de validardatos peso es:   " + peso);
+        }
+    }
+
+
+
+    public interface AlertDialogListener {
+        void mostrarAlerta(String message);
     }
 
 
@@ -57,15 +71,13 @@ public class MainActivityViewModel extends AndroidViewModel {
         return personaData;
     }
 
-    public LiveData<TextView> getMensaje() {
-        return mensaje;
-    }
-
     public LiveData<Boolean> getValidado() {
         return validado;
     }
 
 
-
+    public void setAlertDialogListener(AlertDialogListener listener) {
+        alertDialogListener = listener;
+    }
 
 }
